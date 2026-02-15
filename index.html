@@ -8,7 +8,9 @@
         /* --- CSS VARIABLES --- */
         :root {
             /* Light Theme */
-            --bg-body: transparent;
+            /* Фон всей страницы (вокруг карточки) */
+            --bg-body: #F3F4F6; 
+            /* Фон самой карточки виджета */
             --bg-card: #FFFFFF;
             --text-main: #111827;
             --text-muted: #6B7280;
@@ -16,18 +18,19 @@
             --accent-glow: rgba(45, 225, 194, 0.4);
             --range-track: #E5E7EB;
             --range-fill: #2DE1C2;
-            --input-bg: #F3F4F6;
+            --input-bg: #F9FAFB;
             --input-focus: #FFFFFF;
             --visuals-bg: #F9FAFB;
             --visuals-border: #E5E7EB;
             --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif;
             --shadow-soft: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
+            --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
 
         [data-theme="dark"] {
             /* Dark Theme */
-            --bg-body: transparent;
-            --bg-card: #191919;
+            --bg-body: #111111; /* Глубокий черный фон */
+            --bg-card: #191919; /* Чуть светлее для карточки */
             --text-main: #FFFFFF;
             --text-muted: #9CA3AF;
             --accent-glow: rgba(45, 225, 194, 0.25);
@@ -38,6 +41,7 @@
             --visuals-bg: rgba(255,255,255,0.02);
             --visuals-border: rgba(255,255,255,0.08);
             --shadow-soft: 0 20px 40px -10px rgba(0, 0, 0, 0.4);
+            --shadow-card: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
         /* --- RESET & LAYOUT --- */
@@ -48,27 +52,28 @@
             color: var(--text-main);
             font-family: var(--font);
             width: 100%;
-            min-height: 100vh; /* Ensure full height availability */
+            min-height: 100vh;
             display: flex;
-            align-items: center; /* Center vertically on page */
+            align-items: center;
             justify-content: center;
+            padding: 20px; /* Отступ от краев экрана */
+            transition: background-color 0.3s ease;
         }
 
         .widget-container {
             background: var(--bg-card);
             width: 100%;
-            /* Max width constraint for ultra-wide screens to keep readability */
-            max-width: 1200px; 
-            margin: 0 auto;
+            max-width: 1200px; /* Ограничитель ширины */
             
             display: grid;
-            /* Layout: Controls (40%) | Visuals (60%) */
             grid-template-columns: 0.8fr 1.2fr; 
-            gap: 60px; /* More breathing room */
-            align-items: center; /* Vertically align controls and graph */
+            gap: 60px;
+            align-items: center;
             
             padding: 40px 48px;
-            transition: background 0.3s ease;
+            border-radius: 24px; /* Скругление самой карточки */
+            box-shadow: var(--shadow-card);
+            transition: background 0.3s ease, box-shadow 0.3s ease;
         }
 
         /* --- HEADER --- */
@@ -131,8 +136,8 @@
         }
 
         .label-text {
-            font-size: 14px;
-            font-weight: 600;
+            font-size: 13px;
+            font-weight: 700;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -143,8 +148,8 @@
             display: flex;
             align-items: center;
             background: var(--input-bg);
-            padding: 6px 12px;
-            border-radius: 8px;
+            padding: 8px 12px;
+            border-radius: 10px;
             border: 1px solid transparent;
             transition: all 0.2s ease;
         }
@@ -173,7 +178,7 @@
             font-family: inherit;
             font-weight: 700;
             font-size: 16px;
-            width: 80px;
+            width: 90px;
             text-align: right;
             padding: 0;
             -moz-appearance: textfield;
@@ -219,10 +224,9 @@
         /* --- VISUALS SECTION --- */
         .visuals-container {
              width: 100%;
-             /* IMPORTANT: Fixed aspect ratio logic to prevent stretching */
              height: auto;
-             max-height: 550px; /* Cap the height on big screens */
-             aspect-ratio: 16 / 10; /* Maintain nice shape */
+             max-height: 550px;
+             aspect-ratio: 16 / 10;
              
              display: flex;
              flex-direction: column;
@@ -279,7 +283,7 @@
             flex-grow: 1;
             width: 100%;
             position: relative;
-            overflow: hidden; /* Clean edges */
+            overflow: hidden;
         }
 
         svg { 
@@ -313,15 +317,16 @@
         }
 
         /* --- RESPONSIVENESS --- */
-        
-        /* Mobile/Tablet Breakpoint */
         @media (max-width: 850px) {
             .widget-container {
-                grid-template-columns: 1fr; /* Stack */
+                grid-template-columns: 1fr;
                 gap: 40px;
-                padding: 24px;
+                padding: 32px 24px;
                 max-width: 100%;
+                border-radius: 16px;
             }
+
+            body { padding: 10px; }
 
             .visuals-container {
                 max-height: 400px;
@@ -335,7 +340,6 @@
 
         @media (max-width: 400px) {
             .big-number { font-size: 32px; }
-            .input-wrapper { padding: 4px 8px; }
             input[type="number"] { width: 60px; font-size: 14px; }
         }
     </style>
@@ -430,7 +434,7 @@
     </div>
 
     <script>
-        // --- SYNC & CALCULATION LOGIC ---
+        // --- LOGIC ---
         const bindGroups = [
             { num: 'num-initial', range: 'range-initial' },
             { num: 'num-monthly', range: 'range-monthly' },
@@ -514,7 +518,6 @@
             rangeInput.addEventListener('input', () => syncInputs(rangeInput, numInput));
         });
 
-        // THEME
         function toggleTheme() {
             const html = document.documentElement;
             const isDark = html.getAttribute('data-theme') === 'dark';
@@ -526,7 +529,6 @@
         themeToggle.addEventListener('click', toggleTheme);
         calculate();
         
-        // Auto-theme based on system
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
             toggleTheme();
         }
