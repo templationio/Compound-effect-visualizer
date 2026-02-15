@@ -3,97 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Compound Visualizer | Templation.io</title>
+    <title>Compound Effect Visualizer | Templation.io</title>
     <style>
-        /* --- VARIABLES --- */
+        /* --- CSS VARIABLES --- */
         :root {
-            /* Light Theme Defaults */
+            /* Light Theme */
+            --bg-body: transparent; /* Transparent to blend with Notion if needed */
+            --bg-card: #FFFFFF;
             --text-main: #111827;
             --text-muted: #6B7280;
             --accent: #2DE1C2;
-            --accent-glow: rgba(45, 225, 194, 0.4);
-            --track: #E5E7EB;
-            --thumb: #FFFFFF;
-            --thumb-border: #E5E7EB;
+            --accent-glow: rgba(45, 225, 194, 0.25);
+            --range-track: #E5E7EB;
+            --range-thumb: #FFFFFF;
+            --visuals-bg: #F9FAFB;
+            --visuals-border: #E5E7EB;
             --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif;
         }
 
         [data-theme="dark"] {
-            /* Dark Theme Defaults */
+            /* Dark Theme */
+            --bg-body: transparent;
+            --bg-card: #191919;
             --text-main: #FFFFFF;
             --text-muted: #9CA3AF;
-            --track: #333333;
-            --thumb: #E5E5E5;
-            --thumb-border: #333333;
-            --accent-glow: rgba(45, 225, 194, 0.2);
+            --accent-glow: rgba(45, 225, 194, 0.15);
+            --range-track: #333333;
+            --range-thumb: #E5E5E5;
+            --visuals-bg: rgba(255,255,255,0.03);
+            --visuals-border: rgba(255,255,255,0.05);
         }
 
-        /* --- GLOBAL RESET --- */
+        /* --- RESET & LAYOUT --- */
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: var(--font);
-            /* Полная прозрачность */
-            background-color: transparent; 
+            background-color: var(--bg-body);
             color: var(--text-main);
-            /* Растягиваем на всю ширину и высоту iframe */
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden; /* Убираем скроллы */
-            display: flex;
-            flex-direction: column;
+            font-family: var(--font);
+            padding: 0;
+            margin: 0;
+            /* No fixed height, let content dictate size */
+            width: 100%;
+            overflow-x: hidden;
         }
 
-        /* --- LAYOUT GRID --- */
         .widget-container {
+            background: var(--bg-card);
+            /* Fluid width for Notion */
             width: 100%;
             height: 100%;
+            
             display: grid;
-            /* Grid logic:
-               Desktop: 400px controls (fixed readable width) + rest for graph 
-               Mobile: will switch to stack
-            */
-            grid-template-columns: minmax(300px, 350px) 1fr;
-            grid-template-rows: auto 1fr; /* Header takes auto, content takes rest */
-            gap: 20px 40px;
-            padding: 20px;
+            /* Desktop default: 40% controls, 60% visuals */
+            grid-template-columns: 0.8fr 1.2fr; 
+            gap: 40px;
+            
+            padding: 32px;
+            border-radius: 0; /* Notion handles corners usually, but safe to keep 0 or small */
+            transition: background 0.3s ease;
         }
 
         /* --- HEADER --- */
-        .header {
+        .widget-header {
             grid-column: 1 / -1;
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
+            margin-bottom: 10px;
         }
 
-        .header h2 {
-            font-size: 20px;
+        .title-block h2 {
+            font-size: 22px;
             font-weight: 700;
+            margin-bottom: 4px;
             letter-spacing: -0.5px;
         }
+        
+        .title-block p {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
 
-        .theme-toggle {
-            background: transparent;
-            border: 1px solid var(--text-muted);
+        /* --- THEME TOGGLE --- */
+        .theme-toggle-btn {
+            background: var(--visuals-bg);
+            border: 1px solid var(--visuals-border);
             color: var(--text-main);
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            opacity: 0.5;
-            transition: opacity 0.2s;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
         }
-        .theme-toggle:hover { opacity: 1; }
+        .theme-toggle-btn:hover { background: var(--visuals-border); }
 
-        /* --- CONTROLS SECTION --- */
+        /* --- CONTROLS --- */
         .controls {
             display: flex;
             flex-direction: column;
-            justify-content: center; /* Center vertically */
+            justify-content: center;
             gap: 24px;
         }
 
@@ -106,376 +119,411 @@
         .label-row {
             display: flex;
             justify-content: space-between;
-            align-items: baseline;
+            align-items: center;
             font-size: 14px;
             font-weight: 600;
             color: var(--text-muted);
         }
 
-        /* --- MAGIC INPUTS (Looks like text, acts like input) --- */
+        /* MANUAL INPUT STYLING */
         .input-wrapper {
             display: flex;
-            align-items: baseline;
+            align-items: center;
             color: var(--accent);
             font-weight: 700;
-            font-size: 18px;
-            position: relative;
+            font-size: 16px;
         }
-        
-        .input-wrapper span { margin-right: 2px; pointer-events: none; }
 
-        .magic-input {
+        .input-wrapper span { margin-right: 2px; }
+
+        input[type="number"] {
             background: transparent;
-            border: none;
+            border: 1px solid transparent; /* Invisible border until hover/focus */
+            border-radius: 4px;
             color: inherit;
             font-family: inherit;
-            font-size: inherit;
             font-weight: inherit;
-            width: 80px;
+            font-size: inherit;
+            width: 70px;
             text-align: right;
-            padding: 0;
-            margin: 0;
-            border-bottom: 1px dashed transparent; /* Hint that it's editable on hover */
-            transition: border-color 0.2s;
-            -moz-appearance: textfield;
+            padding: 2px 4px;
+            -moz-appearance: textfield; /* Remove spinner firefox */
+            transition: border-color 0.2s, background 0.2s;
         }
         
-        .magic-input:hover { border-bottom-color: var(--accent); cursor: text; }
-        .magic-input:focus { outline: none; border-bottom-color: var(--accent); }
-        .magic-input::-webkit-outer-spin-button,
-        .magic-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type="number"]:hover {
+            background: var(--visuals-bg);
+            border-color: var(--visuals-border);
+        }
 
-        /* --- SLIDERS --- */
+        input[type="number"]:focus {
+            outline: none;
+            background: var(--range-track);
+            color: var(--text-main);
+        }
+
+        /* Remove spinner chrome/safari */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* SLIDERS */
         input[type=range] {
             -webkit-appearance: none;
             width: 100%;
             background: transparent;
+            margin: 10px 0;
         }
         input[type=range]:focus { outline: none; }
 
-        /* Track */
         input[type=range]::-webkit-slider-runnable-track {
             width: 100%;
-            height: 4px;
+            height: 6px;
             cursor: pointer;
-            background: var(--track);
-            border-radius: 2px;
+            background: var(--range-track);
+            border-radius: 4px;
+            transition: background 0.3s;
         }
         
-        /* Thumb */
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            height: 18px;
-            width: 18px;
+            height: 20px;
+            width: 20px;
             border-radius: 50%;
-            background: var(--thumb);
-            border: 2px solid var(--thumb-border);
+            background: var(--range-thumb);
             cursor: pointer;
             margin-top: -7px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: transform 0.1s, border-color 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            border: 2px solid var(--bg-card);
+            transition: transform 0.1s, background 0.2s;
         }
 
         input[type=range]:active::-webkit-slider-thumb {
             transform: scale(1.2);
+            background: var(--accent);
             border-color: var(--accent);
         }
 
-        /* --- VISUALS (GRAPH) --- */
-        .visuals {
+        /* --- VISUALS --- */
+        .visuals-container {
+             display: flex;
+             flex-direction: column;
+             height: 100%;
+             min-height: 280px; /* Minimum height for graph */
+        }
+
+        .visuals-card {
+            flex-grow: 1;
             display: flex;
             flex-direction: column;
-            justify-content: flex-end; /* Push content to bottom */
+            justify-content: space-between;
+            background: var(--visuals-bg);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--visuals-border);
             position: relative;
-            min-height: 200px;
         }
 
-        .stats-overlay {
-            margin-bottom: 20px;
-            z-index: 2;
-        }
+        .result-block { margin-bottom: 20px; z-index: 2; }
 
-        .big-label {
+        .result-label {
             font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 1px;
+            font-weight: 600;
             color: var(--text-muted);
             margin-bottom: 4px;
         }
 
         .big-number {
-            font-size: 4vw; /* Responsive font size based on width */
-            min-font-size: 32px;
-            max-font-size: 60px;
+            font-size: 42px;
             font-weight: 800;
-            line-height: 1;
-            color: var(--text-main);
+            letter-spacing: -1px;
+            background: linear-gradient(90deg, var(--text-main), var(--text-muted));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.1;
         }
-        
-        /* Clamp font size for big number manually for better control */
-        @media (min-width: 1200px) { .big-number { font-size: 56px; } }
-        @media (max-width: 600px) { .big-number { font-size: 36px; } }
 
-        .profit-text {
-            color: var(--accent);
-            font-weight: 600;
-            font-size: 14px;
+        .profit-badge {
+            display: inline-flex;
+            align-items: center;
             margin-top: 8px;
+            color: var(--accent);
+            font-size: 13px;
+            font-weight: 600;
         }
 
-        .chart-container {
+        /* CHART */
+        .chart-wrapper {
+            flex-grow: 1;
             width: 100%;
-            height: 60%; /* Occupy bottom 60% of the visual area */
             min-height: 150px;
             position: relative;
         }
 
-        svg {
-            width: 100%;
-            height: 100%;
-            overflow: visible;
-        }
+        svg { width: 100%; height: 100%; overflow: visible; }
 
-        .line {
+        .chart-line {
             fill: none;
             stroke: var(--accent);
-            stroke-width: 4;
+            stroke-width: 3;
             stroke-linecap: round;
             stroke-linejoin: round;
-            filter: drop-shadow(0 0 8px var(--accent-glow));
+            filter: drop-shadow(0 0 10px var(--accent-glow));
         }
 
-        .area {
-            fill: url(#grad);
-            opacity: 0.2;
+        .chart-area {
+            fill: url(#gradientArea);
+            opacity: 0.3;
         }
 
-        .footer {
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            font-size: 10px;
+        .branding {
+            text-align: right;
+            font-size: 11px;
             color: var(--text-muted);
-            opacity: 0.5;
+            opacity: 0.6;
+            margin-top: 12px;
         }
 
-        /* --- RESPONSIVE LOGIC --- */
-        @media (max-width: 768px) {
-            body { overflow-y: auto; height: auto; } /* Allow scroll on mobile if needed */
+        /* --- RESPONSIVENESS (Media Queries) --- */
+        
+        /* Tablet & Mobile (Narrower than 700px) */
+        @media (max-width: 700px) {
             .widget-container {
-                display: flex;
-                flex-direction: column;
-                gap: 40px;
+                grid-template-columns: 1fr; /* Stack vertically */
+                gap: 32px;
+                padding: 20px;
             }
-            .chart-container { height: 200px; }
-            .controls { order: 2; } /* Graph on top? or Controls on top? Let's keep controls top for usage */
-            .visuals { order: 1; }
+
+            .visuals-container {
+                min-height: auto; /* Let content dictate height */
+            }
+            
+            .visuals-card {
+                padding: 20px;
+                min-height: 220px;
+            }
+
+            .big-number { font-size: 36px; }
+            
+            /* Order: Header -> Visuals (Top) -> Controls (Bottom) for better mobile UX? 
+               Or keep Controls -> Visuals. Let's keep standard flow. */
         }
 
+        /* Very small screens */
+        @media (max-width: 400px) {
+            .big-number { font-size: 28px; }
+            .theme-toggle-btn { width: 32px; height: 32px; }
+        }
     </style>
 </head>
 <body>
 
     <div class="widget-container">
-        
-        <div class="header">
-            <h2>The Compound Effect</h2>
-            <button class="theme-toggle" id="themeBtn">
-                <svg id="icon-sun" style="display:none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-                <svg id="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        <div class="widget-header">
+            <div class="title-block">
+                <h2>The Compound Effect</h2>
+                <p>Visualize your financial growth</p>
+            </div>
+            <button class="theme-toggle-btn" id="themeToggle">
+                <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
             </button>
         </div>
 
         <div class="controls">
             <div class="control-group">
                 <div class="label-row">
-                    <label>Starting Amount</label>
+                    <label for="num-initial">Starting Amount</label>
                     <div class="input-wrapper">
                         <span>$</span>
-                        <input type="number" class="magic-input" id="num-initial" value="1000">
+                        <input type="number" id="num-initial" value="1000" min="0" step="100">
                     </div>
                 </div>
-                <input type="range" id="rng-initial" min="0" max="20000" step="100" value="1000">
+                <input type="range" id="range-initial" min="0" max="20000" step="100" value="1000">
             </div>
 
             <div class="control-group">
                 <div class="label-row">
-                    <label>Monthly Contribution</label>
+                    <label for="num-monthly">Monthly Contribution</label>
                     <div class="input-wrapper">
                         <span>$</span>
-                        <input type="number" class="magic-input" id="num-monthly" value="200">
+                        <input type="number" id="num-monthly" value="200" min="0" step="50">
                     </div>
                 </div>
-                <input type="range" id="rng-monthly" min="0" max="5000" step="50" value="200">
+                <input type="range" id="range-monthly" min="0" max="5000" step="50" value="200">
             </div>
 
             <div class="control-group">
                 <div class="label-row">
-                    <label>Years to Grow</label>
+                    <label for="num-years">Years to Grow</label>
                     <div class="input-wrapper">
-                        <input type="number" class="magic-input" id="num-years" value="10">
-                        <span style="margin-left:2px; font-size: 14px; font-weight:600; color:var(--text-muted)">yrs</span>
+                        <input type="number" id="num-years" value="10" min="1" max="50" style="width: 50px;">
+                        <span style="margin-left: 4px; font-size: 14px; font-weight: 500; color: var(--text-muted);">yrs</span>
                     </div>
                 </div>
-                <input type="range" id="rng-years" min="1" max="40" step="1" value="10">
+                <input type="range" id="range-years" min="1" max="40" step="1" value="10">
             </div>
 
             <div class="control-group">
                 <div class="label-row">
-                    <label>Expected Return</label>
+                    <label for="num-rate">Expected Return</label>
                     <div class="input-wrapper">
-                        <input type="number" class="magic-input" id="num-rate" value="8">
-                        <span style="margin-left:2px; font-size: 14px; font-weight:600; color:var(--text-muted)">%</span>
+                        <input type="number" id="num-rate" value="8" min="0" max="20" step="0.5" style="width: 50px;">
+                        <span>%</span>
                     </div>
                 </div>
-                <input type="range" id="rng-rate" min="1" max="15" step="0.5" value="8">
+                <input type="range" id="range-rate" min="1" max="15" step="0.5" value="8">
             </div>
         </div>
 
-        <div class="visuals">
-            <div class="stats-overlay">
-                <div class="big-label">Future Balance</div>
-                <div class="big-number" id="disp-total">$0</div>
-                <div class="profit-text" id="disp-profit">+$0 interest</div>
+        <div class="visuals-container">
+            <div class="visuals-card">
+                <div class="result-block">
+                    <div class="result-label">Future Balance</div>
+                    <div class="big-number" id="result-total">$0</div>
+                    <div class="profit-badge">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="margin-right:6px"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                        <span id="result-profit">$0 interest</span>
+                    </div>
+                </div>
+                <div class="chart-wrapper">
+                    <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+                        <defs>
+                            <linearGradient id="gradientArea" x1="0" x2="0" y1="0" y2="1">
+                                <stop offset="0%" stop-color="var(--accent)" />
+                                <stop offset="100%" stop-color="transparent" />
+                            </linearGradient>
+                        </defs>
+                        <path id="graph-area" class="chart-area" d="" />
+                        <path id="graph-line" class="chart-line" d="" />
+                    </svg>
+                </div>
             </div>
-
-            <div class="chart-container">
-                <svg viewBox="0 0 100 100" preserveAspectRatio="none">
-                    <defs>
-                        <linearGradient id="grad" x1="0" x2="0" y1="0" y2="1">
-                            <stop offset="0%" stop-color="var(--accent)" />
-                            <stop offset="100%" stop-color="transparent" />
-                        </linearGradient>
-                    </defs>
-                    <path id="path-area" class="area" d="" />
-                    <path id="path-line" class="line" d="" />
-                </svg>
-            </div>
-            
-            <div class="footer">Powered by Templation.io</div>
+            <div class="branding">Powered by Templation.io</div>
         </div>
-
     </div>
 
     <script>
-        // --- 1. CONFIG & REFS ---
-        const inputs = [
-            { id: 'initial', min: 0, max: 100000 }, 
-            { id: 'monthly', min: 0, max: 20000 },
-            { id: 'years', min: 1, max: 60 },
-            { id: 'rate', min: 0, max: 30 }
+        // --- DATA BINDING HELPERS ---
+        // Pairs of [NumberInput, RangeInput]
+        const bindGroups = [
+            { num: 'num-initial', range: 'range-initial' },
+            { num: 'num-monthly', range: 'range-monthly' },
+            { num: 'num-years', range: 'range-years' },
+            { num: 'num-rate', range: 'range-rate' }
         ];
 
-        const refs = {
-            total: document.getElementById('disp-total'),
-            profit: document.getElementById('disp-profit'),
-            line: document.getElementById('path-line'),
-            area: document.getElementById('path-area'),
-            themeBtn: document.getElementById('themeBtn'),
-            sun: document.getElementById('icon-sun'),
-            moon: document.getElementById('icon-moon')
-        };
-
-        // --- 2. BINDING LOGIC (Universal) ---
-        const state = {};
-
-        inputs.forEach(item => {
-            const num = document.getElementById(`num-${item.id}`);
-            const rng = document.getElementById(`rng-${item.id}`);
-
-            // Init State
-            state[item.id] = parseFloat(num.value);
-
-            // Number Input Listener
-            num.addEventListener('input', (e) => {
-                let val = parseFloat(e.target.value);
-                if (isNaN(val)) return;
-                state[item.id] = val;
-                rng.value = val; // Sync slider visual (might cap visual but keep value)
-                calculate();
-            });
-
-            // Range Slider Listener
-            rng.addEventListener('input', (e) => {
-                let val = parseFloat(e.target.value);
-                state[item.id] = val;
-                num.value = val; // Sync text
-                calculate();
-            });
+        // Store references
+        const refs = {};
+        bindGroups.forEach(g => {
+            refs[g.num] = document.getElementById(g.num);
+            refs[g.range] = document.getElementById(g.range);
         });
 
-        // --- 3. CALCULATION ENGINE ---
+        const displayTotal = document.getElementById('result-total');
+        const displayProfit = document.getElementById('result-profit');
+        const graphLine = document.getElementById('graph-line');
+        const graphArea = document.getElementById('graph-area');
+        const themeToggle = document.getElementById('themeToggle');
+        const iconSun = document.querySelector('.icon-sun');
+        const iconMoon = document.querySelector('.icon-moon');
+
+        // --- CORE CALCULATION ---
         function calculate() {
-            const P = state.initial;
-            const PMT = state.monthly;
-            const t = state.years;
-            const r = state.rate / 100 / 12;
+            // Read values from NUMBER inputs (they are the source of truth if synced)
+            const P = parseFloat(refs['num-initial'].value) || 0;
+            const PMT = parseFloat(refs['num-monthly'].value) || 0;
+            const r = (parseFloat(refs['num-rate'].value) || 0) / 100 / 12;
+            const t = parseFloat(refs['num-years'].value) || 0;
             const n = t * 12;
 
             let points = [P];
-            let balance = P;
+            let currentBalance = P;
             let totalInvested = P;
 
-            // Generate Monthly Points
-            for(let i=1; i<=n; i++) {
-                balance = (balance * (1 + r)) + PMT;
-                // Optimization: Don't push every single month for long periods (SVG limit)
-                // Push only if it's a significant step or last point
-                if (n > 200 && i % 6 !== 0 && i !== n) continue; 
-                points.push(balance);
+            for (let i = 1; i <= n; i++) {
+                currentBalance = (currentBalance * (1 + r)) + PMT;
+                if (i % 12 === 0 || i === n) points.push(currentBalance);
             }
-
+            
             totalInvested += (PMT * n);
-            const profit = balance - totalInvested;
+            const totalInterest = currentBalance - totalInvested;
 
-            // Render Text
-            refs.total.textContent = '$' + Math.round(balance).toLocaleString('en-US');
-            refs.profit.textContent = `+ $${Math.round(profit).toLocaleString('en-US')} free money`;
+            // Update Text
+            displayTotal.textContent = formatMoney(currentBalance);
+            displayProfit.textContent = `${formatMoney(totalInterest)} interest earned`;
 
-            // Render Graph
-            draw(points);
+            // Draw Graph
+            drawGraph(points);
         }
 
-        // --- 4. SVG RENDERER ---
-        function draw(data) {
-            if (data.length < 2) return;
-            
-            // Scaling logic
-            const max = Math.max(...data);
-            const min = data[0];
-            const range = max - (min > 0 ? 0 : 0); // Scale from 0 ideally
+        function formatMoney(amount) {
+            return '$' + Math.round(amount).toLocaleString('en-US');
+        }
 
-            // Convert data to 0-100 coordinates
-            const coords = data.map((val, i) => {
-                const x = (i / (data.length - 1)) * 100;
-                // Invert Y (100 is bottom), add padding top (90% height usage)
-                const y = 100 - ((val / (max * 1.1)) * 100); 
+        // --- GRAPHING ---
+        function drawGraph(data) {
+            if (data.length < 2) return;
+            const maxVal = Math.max(...data) * 1.05;
+            const minVal = data[0]; 
+            // Avoid flat line if start == end
+            const effectiveMax = maxVal === minVal ? maxVal + 100 : maxVal;
+            const range = effectiveMax - (minVal > 0 ? minVal * 0.7 : 0);
+            const base = (minVal > 0 ? minVal * 0.7 : 0);
+
+            const normalized = data.map((val, index) => {
+                const x = (index / (data.length - 1)) * 100;
+                const y = 100 - (((val - base) / range) * 95);
                 return [x, y];
             });
 
-            // Construct Path
-            let d = `M ${coords[0][0]},${coords[0][1]} `;
-            for(let i=1; i<coords.length; i++) {
-                d += `L ${coords[i][0]},${coords[i][1]} `;
-            }
+            let pathD = `M ${normalized[0][0]},${normalized[0][1]} `;
+            for (let i = 1; i < normalized.length; i++) pathD += `L ${normalized[i][0]},${normalized[i][1]} `;
 
-            // Apply to DOM
-            refs.line.setAttribute('d', d);
-            refs.area.setAttribute('d', d + ` L 100,100 L 0,100 Z`);
+            graphLine.setAttribute('d', pathD);
+            graphArea.setAttribute('d', pathD + `L 100,100 L 0,100 Z`);
         }
 
-        // --- 5. THEME SWITCHER ---
-        let isDark = true; // Default based on HTML
-        refs.themeBtn.addEventListener('click', () => {
-            isDark = !isDark;
-            document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-            refs.sun.style.display = isDark ? 'none' : 'block';
-            refs.moon.style.display = isDark ? 'block' : 'none';
+        // --- SYNC LOGIC ---
+        function syncInputs(source, target, isNumToRange) {
+            // Update the other input
+            target.value = source.value;
+            // Recalculate everything
+            calculate();
+        }
+
+        bindGroups.forEach(group => {
+            const numInput = refs[group.num];
+            const rangeInput = refs[group.range];
+
+            // If user types in number box -> update range
+            numInput.addEventListener('input', () => syncInputs(numInput, rangeInput, true));
+            
+            // If user slides range -> update number box
+            rangeInput.addEventListener('input', () => syncInputs(rangeInput, numInput, false));
         });
 
-        // Init
-        calculate();
+        // --- THEME ---
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+            iconSun.style.display = isDark ? 'none' : 'block';
+            iconMoon.style.display = isDark ? 'block' : 'none';
+        }
 
+        themeToggle.addEventListener('click', toggleTheme);
+        
+        // --- INIT ---
+        calculate();
+        // Check system preference
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+            toggleTheme();
+        }
     </script>
 </body>
 </html>
