@@ -3,22 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Compound Effect Visualizer | Templation.io</title>
+    <title>Compound Effect | Templation.io</title>
     <style>
         /* --- CSS VARIABLES --- */
         :root {
             /* Light Theme */
-            --bg-body: transparent; /* Transparent to blend with Notion if needed */
+            --bg-body: transparent;
             --bg-card: #FFFFFF;
             --text-main: #111827;
             --text-muted: #6B7280;
             --accent: #2DE1C2;
-            --accent-glow: rgba(45, 225, 194, 0.25);
+            --accent-glow: rgba(45, 225, 194, 0.4);
             --range-track: #E5E7EB;
-            --range-thumb: #FFFFFF;
+            --range-fill: #2DE1C2;
+            --input-bg: #F3F4F6;
+            --input-focus: #FFFFFF;
             --visuals-bg: #F9FAFB;
             --visuals-border: #E5E7EB;
             --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif;
+            --shadow-soft: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
         }
 
         [data-theme="dark"] {
@@ -27,11 +30,14 @@
             --bg-card: #191919;
             --text-main: #FFFFFF;
             --text-muted: #9CA3AF;
-            --accent-glow: rgba(45, 225, 194, 0.15);
+            --accent-glow: rgba(45, 225, 194, 0.25);
             --range-track: #333333;
-            --range-thumb: #E5E5E5;
-            --visuals-bg: rgba(255,255,255,0.03);
-            --visuals-border: rgba(255,255,255,0.05);
+            --range-fill: #2DE1C2;
+            --input-bg: #262626;
+            --input-focus: #000000;
+            --visuals-bg: rgba(255,255,255,0.02);
+            --visuals-border: rgba(255,255,255,0.08);
+            --shadow-soft: 0 20px 40px -10px rgba(0, 0, 0, 0.4);
         }
 
         /* --- RESET & LAYOUT --- */
@@ -41,26 +47,27 @@
             background-color: var(--bg-body);
             color: var(--text-main);
             font-family: var(--font);
-            padding: 0;
-            margin: 0;
-            /* No fixed height, let content dictate size */
             width: 100%;
-            overflow-x: hidden;
+            min-height: 100vh; /* Ensure full height availability */
+            display: flex;
+            align-items: center; /* Center vertically on page */
+            justify-content: center;
         }
 
         .widget-container {
             background: var(--bg-card);
-            /* Fluid width for Notion */
             width: 100%;
-            height: 100%;
+            /* Max width constraint for ultra-wide screens to keep readability */
+            max-width: 1200px; 
+            margin: 0 auto;
             
             display: grid;
-            /* Desktop default: 40% controls, 60% visuals */
+            /* Layout: Controls (40%) | Visuals (60%) */
             grid-template-columns: 0.8fr 1.2fr; 
-            gap: 40px;
+            gap: 60px; /* More breathing room */
+            align-items: center; /* Vertically align controls and graph */
             
-            padding: 32px;
-            border-radius: 0; /* Notion handles corners usually, but safe to keep 0 or small */
+            padding: 40px 48px;
             transition: background 0.3s ease;
         }
 
@@ -70,13 +77,15 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--visuals-border);
+            padding-bottom: 20px;
         }
 
         .title-block h2 {
-            font-size: 22px;
+            font-size: 24px;
             font-weight: 700;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
             letter-spacing: -0.5px;
         }
         
@@ -85,96 +94,98 @@
             color: var(--text-muted);
         }
 
-        /* --- THEME TOGGLE --- */
+        /* Toggle Button */
         .theme-toggle-btn {
             background: var(--visuals-bg);
             border: 1px solid var(--visuals-border);
             color: var(--text-main);
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             transition: all 0.2s ease;
-            flex-shrink: 0;
         }
-        .theme-toggle-btn:hover { background: var(--visuals-border); }
+        .theme-toggle-btn:hover { border-color: var(--text-muted); }
 
-        /* --- CONTROLS --- */
+        /* --- CONTROLS SECTION --- */
         .controls {
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            gap: 24px;
+            gap: 32px;
+            padding-right: 10px;
         }
 
         .control-group {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 12px;
         }
 
         .label-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+
+        .label-text {
             font-size: 14px;
             font-weight: 600;
             color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        /* MANUAL INPUT STYLING */
+        /* Styled Inputs */
         .input-wrapper {
             display: flex;
             align-items: center;
-            color: var(--accent);
-            font-weight: 700;
-            font-size: 16px;
+            background: var(--input-bg);
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
         }
 
-        .input-wrapper span { margin-right: 2px; }
+        .input-wrapper:hover {
+            border-color: var(--visuals-border);
+        }
+        
+        .input-wrapper:focus-within {
+            background: var(--input-focus);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .currency {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 15px;
+            margin-right: 4px;
+        }
 
         input[type="number"] {
             background: transparent;
-            border: 1px solid transparent; /* Invisible border until hover/focus */
-            border-radius: 4px;
-            color: inherit;
-            font-family: inherit;
-            font-weight: inherit;
-            font-size: inherit;
-            width: 70px;
-            text-align: right;
-            padding: 2px 4px;
-            -moz-appearance: textfield; /* Remove spinner firefox */
-            transition: border-color 0.2s, background 0.2s;
-        }
-        
-        input[type="number"]:hover {
-            background: var(--visuals-bg);
-            border-color: var(--visuals-border);
-        }
-
-        input[type="number"]:focus {
-            outline: none;
-            background: var(--range-track);
+            border: none;
             color: var(--text-main);
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 16px;
+            width: 80px;
+            text-align: right;
+            padding: 0;
+            -moz-appearance: textfield;
         }
-
-        /* Remove spinner chrome/safari */
-        input[type="number"]::-webkit-outer-spin-button,
-        input[type="number"]::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-
-        /* SLIDERS */
+        input[type="number"]:focus { outline: none; }
+        
+        /* Sliders */
         input[type=range] {
             -webkit-appearance: none;
             width: 100%;
             background: transparent;
-            margin: 10px 0;
+            margin: 0;
         }
         input[type=range]:focus { outline: none; }
 
@@ -184,95 +195,106 @@
             cursor: pointer;
             background: var(--range-track);
             border-radius: 4px;
-            transition: background 0.3s;
         }
         
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            height: 20px;
-            width: 20px;
+            height: 22px;
+            width: 22px;
             border-radius: 50%;
-            background: var(--range-thumb);
+            background: var(--bg-card);
             cursor: pointer;
-            margin-top: -7px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            border: 2px solid var(--bg-card);
-            transition: transform 0.1s, background 0.2s;
+            margin-top: -8px; /* Center */
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            border: 2px solid var(--accent);
+            transition: transform 0.1s, box-shadow 0.2s;
         }
 
         input[type=range]:active::-webkit-slider-thumb {
-            transform: scale(1.2);
+            transform: scale(1.1);
             background: var(--accent);
-            border-color: var(--accent);
+            box-shadow: 0 0 10px var(--accent-glow);
         }
 
-        /* --- VISUALS --- */
+        /* --- VISUALS SECTION --- */
         .visuals-container {
+             width: 100%;
+             /* IMPORTANT: Fixed aspect ratio logic to prevent stretching */
+             height: auto;
+             max-height: 550px; /* Cap the height on big screens */
+             aspect-ratio: 16 / 10; /* Maintain nice shape */
+             
              display: flex;
              flex-direction: column;
-             height: 100%;
-             min-height: 280px; /* Minimum height for graph */
+             background: var(--visuals-bg);
+             border-radius: 24px;
+             border: 1px solid var(--visuals-border);
+             padding: 32px;
+             box-shadow: var(--shadow-soft);
+             position: relative;
         }
 
-        .visuals-card {
-            flex-grow: 1;
+        .result-header {
             display: flex;
-            flex-direction: column;
             justify-content: space-between;
-            background: var(--visuals-bg);
-            border-radius: 16px;
-            padding: 24px;
-            border: 1px solid var(--visuals-border);
-            position: relative;
+            align-items: flex-end;
+            margin-bottom: 20px;
+            z-index: 2;
         }
 
-        .result-block { margin-bottom: 20px; z-index: 2; }
+        .result-block { display: flex; flex-direction: column; }
 
         .result-label {
             font-size: 12px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.2px;
             font-weight: 600;
             color: var(--text-muted);
-            margin-bottom: 4px;
+            margin-bottom: 6px;
         }
 
         .big-number {
-            font-size: 42px;
+            font-size: 48px;
             font-weight: 800;
-            letter-spacing: -1px;
-            background: linear-gradient(90deg, var(--text-main), var(--text-muted));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            line-height: 1.1;
+            letter-spacing: -1.5px;
+            color: var(--text-main);
+            line-height: 1;
         }
 
         .profit-badge {
-            display: inline-flex;
-            align-items: center;
-            margin-top: 8px;
+            background: var(--accent-glow);
             color: var(--accent);
-            font-size: 13px;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 14px;
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            height: fit-content;
         }
 
         /* CHART */
         .chart-wrapper {
             flex-grow: 1;
             width: 100%;
-            min-height: 150px;
             position: relative;
+            overflow: hidden; /* Clean edges */
         }
 
-        svg { width: 100%; height: 100%; overflow: visible; }
+        svg { 
+            width: 100%; 
+            height: 100%; 
+            overflow: visible;
+        }
 
         .chart-line {
             fill: none;
             stroke: var(--accent);
-            stroke-width: 3;
+            stroke-width: 4;
             stroke-linecap: round;
             stroke-linejoin: round;
-            filter: drop-shadow(0 0 10px var(--accent-glow));
+            filter: drop-shadow(0 4px 12px var(--accent-glow));
         }
 
         .chart-area {
@@ -281,42 +303,40 @@
         }
 
         .branding {
-            text-align: right;
+            position: absolute;
+            bottom: 20px;
+            right: 32px;
             font-size: 11px;
+            font-weight: 500;
             color: var(--text-muted);
-            opacity: 0.6;
-            margin-top: 12px;
+            opacity: 0.5;
         }
 
-        /* --- RESPONSIVENESS (Media Queries) --- */
+        /* --- RESPONSIVENESS --- */
         
-        /* Tablet & Mobile (Narrower than 700px) */
-        @media (max-width: 700px) {
+        /* Mobile/Tablet Breakpoint */
+        @media (max-width: 850px) {
             .widget-container {
-                grid-template-columns: 1fr; /* Stack vertically */
-                gap: 32px;
-                padding: 20px;
+                grid-template-columns: 1fr; /* Stack */
+                gap: 40px;
+                padding: 24px;
+                max-width: 100%;
             }
 
             .visuals-container {
-                min-height: auto; /* Let content dictate height */
-            }
-            
-            .visuals-card {
-                padding: 20px;
-                min-height: 220px;
+                max-height: 400px;
+                aspect-ratio: auto;
+                min-height: 300px;
             }
 
             .big-number { font-size: 36px; }
-            
-            /* Order: Header -> Visuals (Top) -> Controls (Bottom) for better mobile UX? 
-               Or keep Controls -> Visuals. Let's keep standard flow. */
+            .result-header { flex-direction: column; align-items: flex-start; gap: 12px; }
         }
 
-        /* Very small screens */
         @media (max-width: 400px) {
-            .big-number { font-size: 28px; }
-            .theme-toggle-btn { width: 32px; height: 32px; }
+            .big-number { font-size: 32px; }
+            .input-wrapper { padding: 4px 8px; }
+            input[type="number"] { width: 60px; font-size: 14px; }
         }
     </style>
 </head>
@@ -326,7 +346,7 @@
         <div class="widget-header">
             <div class="title-block">
                 <h2>The Compound Effect</h2>
-                <p>Visualize your financial growth</p>
+                <p>Visualize your wealth accumulation</p>
             </div>
             <button class="theme-toggle-btn" id="themeToggle">
                 <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
@@ -337,9 +357,9 @@
         <div class="controls">
             <div class="control-group">
                 <div class="label-row">
-                    <label for="num-initial">Starting Amount</label>
+                    <span class="label-text">Starting Amount</span>
                     <div class="input-wrapper">
-                        <span>$</span>
+                        <span class="currency">$</span>
                         <input type="number" id="num-initial" value="1000" min="0" step="100">
                     </div>
                 </div>
@@ -348,9 +368,9 @@
 
             <div class="control-group">
                 <div class="label-row">
-                    <label for="num-monthly">Monthly Contribution</label>
+                    <span class="label-text">Monthly Deposit</span>
                     <div class="input-wrapper">
-                        <span>$</span>
+                        <span class="currency">$</span>
                         <input type="number" id="num-monthly" value="200" min="0" step="50">
                     </div>
                 </div>
@@ -359,10 +379,10 @@
 
             <div class="control-group">
                 <div class="label-row">
-                    <label for="num-years">Years to Grow</label>
+                    <span class="label-text">Time Horizon</span>
                     <div class="input-wrapper">
-                        <input type="number" id="num-years" value="10" min="1" max="50" style="width: 50px;">
-                        <span style="margin-left: 4px; font-size: 14px; font-weight: 500; color: var(--text-muted);">yrs</span>
+                        <input type="number" id="num-years" value="10" min="1" max="50">
+                        <span class="currency" style="margin-left:4px; margin-right:0; font-size:12px">yrs</span>
                     </div>
                 </div>
                 <input type="range" id="range-years" min="1" max="40" step="1" value="10">
@@ -370,10 +390,10 @@
 
             <div class="control-group">
                 <div class="label-row">
-                    <label for="num-rate">Expected Return</label>
+                    <span class="label-text">Annual Return</span>
                     <div class="input-wrapper">
-                        <input type="number" id="num-rate" value="8" min="0" max="20" step="0.5" style="width: 50px;">
-                        <span>%</span>
+                        <input type="number" id="num-rate" value="8" min="0" max="20" step="0.5">
+                        <span class="currency" style="margin-left:2px; margin-right:0">%</span>
                     </div>
                 </div>
                 <input type="range" id="range-rate" min="1" max="15" step="0.5" value="8">
@@ -381,35 +401,36 @@
         </div>
 
         <div class="visuals-container">
-            <div class="visuals-card">
+            <div class="result-header">
                 <div class="result-block">
-                    <div class="result-label">Future Balance</div>
+                    <div class="result-label">Projected Balance</div>
                     <div class="big-number" id="result-total">$0</div>
-                    <div class="profit-badge">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="margin-right:6px"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-                        <span id="result-profit">$0 interest</span>
-                    </div>
                 </div>
-                <div class="chart-wrapper">
-                    <svg viewBox="0 0 100 100" preserveAspectRatio="none">
-                        <defs>
-                            <linearGradient id="gradientArea" x1="0" x2="0" y1="0" y2="1">
-                                <stop offset="0%" stop-color="var(--accent)" />
-                                <stop offset="100%" stop-color="transparent" />
-                            </linearGradient>
-                        </defs>
-                        <path id="graph-area" class="chart-area" d="" />
-                        <path id="graph-line" class="chart-line" d="" />
-                    </svg>
+                <div class="profit-badge">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                    <span id="result-profit">$0 profit</span>
                 </div>
             </div>
+
+            <div class="chart-wrapper">
+                <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <defs>
+                        <linearGradient id="gradientArea" x1="0" x2="0" y1="0" y2="1">
+                            <stop offset="0%" stop-color="var(--accent)" />
+                            <stop offset="100%" stop-color="transparent" />
+                        </linearGradient>
+                    </defs>
+                    <path id="graph-area" class="chart-area" d="" />
+                    <path id="graph-line" class="chart-line" d="" />
+                </svg>
+            </div>
+            
             <div class="branding">Powered by Templation.io</div>
         </div>
     </div>
 
     <script>
-        // --- DATA BINDING HELPERS ---
-        // Pairs of [NumberInput, RangeInput]
+        // --- SYNC & CALCULATION LOGIC ---
         const bindGroups = [
             { num: 'num-initial', range: 'range-initial' },
             { num: 'num-monthly', range: 'range-monthly' },
@@ -417,7 +438,6 @@
             { num: 'num-rate', range: 'range-rate' }
         ];
 
-        // Store references
         const refs = {};
         bindGroups.forEach(g => {
             refs[g.num] = document.getElementById(g.num);
@@ -432,9 +452,7 @@
         const iconSun = document.querySelector('.icon-sun');
         const iconMoon = document.querySelector('.icon-moon');
 
-        // --- CORE CALCULATION ---
         function calculate() {
-            // Read values from NUMBER inputs (they are the source of truth if synced)
             const P = parseFloat(refs['num-initial'].value) || 0;
             const PMT = parseFloat(refs['num-monthly'].value) || 0;
             const r = (parseFloat(refs['num-rate'].value) || 0) / 100 / 12;
@@ -453,11 +471,9 @@
             totalInvested += (PMT * n);
             const totalInterest = currentBalance - totalInvested;
 
-            // Update Text
             displayTotal.textContent = formatMoney(currentBalance);
-            displayProfit.textContent = `${formatMoney(totalInterest)} interest earned`;
+            displayProfit.textContent = `+${formatMoney(totalInterest)} free money`;
 
-            // Draw Graph
             drawGraph(points);
         }
 
@@ -465,12 +481,10 @@
             return '$' + Math.round(amount).toLocaleString('en-US');
         }
 
-        // --- GRAPHING ---
         function drawGraph(data) {
             if (data.length < 2) return;
             const maxVal = Math.max(...data) * 1.05;
             const minVal = data[0]; 
-            // Avoid flat line if start == end
             const effectiveMax = maxVal === minVal ? maxVal + 100 : maxVal;
             const range = effectiveMax - (minVal > 0 ? minVal * 0.7 : 0);
             const base = (minVal > 0 ? minVal * 0.7 : 0);
@@ -488,26 +502,19 @@
             graphArea.setAttribute('d', pathD + `L 100,100 L 0,100 Z`);
         }
 
-        // --- SYNC LOGIC ---
-        function syncInputs(source, target, isNumToRange) {
-            // Update the other input
+        function syncInputs(source, target) {
             target.value = source.value;
-            // Recalculate everything
             calculate();
         }
 
         bindGroups.forEach(group => {
             const numInput = refs[group.num];
             const rangeInput = refs[group.range];
-
-            // If user types in number box -> update range
-            numInput.addEventListener('input', () => syncInputs(numInput, rangeInput, true));
-            
-            // If user slides range -> update number box
-            rangeInput.addEventListener('input', () => syncInputs(rangeInput, numInput, false));
+            numInput.addEventListener('input', () => syncInputs(numInput, rangeInput));
+            rangeInput.addEventListener('input', () => syncInputs(rangeInput, numInput));
         });
 
-        // --- THEME ---
+        // THEME
         function toggleTheme() {
             const html = document.documentElement;
             const isDark = html.getAttribute('data-theme') === 'dark';
@@ -517,10 +524,9 @@
         }
 
         themeToggle.addEventListener('click', toggleTheme);
-        
-        // --- INIT ---
         calculate();
-        // Check system preference
+        
+        // Auto-theme based on system
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
             toggleTheme();
         }
