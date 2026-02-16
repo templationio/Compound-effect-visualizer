@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Compound Effect | Templation.io</title>
     <style>
-        /* --- CSS VARIABLES --- */
         :root {
-            /* LIGHT THEME */
-            --bg-main: #FFFFFF; /* Весь фон теперь белый */
+            --bg-main: #FFFFFF;
             --text-main: #111827;
             --text-muted: #6B7280;
             --accent: #2DE1C2;
@@ -23,8 +21,7 @@
         }
 
         [data-theme="dark"] {
-            /* DARK THEME */
-            --bg-main: #191919; /* Весь фон темный */
+            --bg-main: #191919;
             --text-main: #FFFFFF;
             --text-muted: #9CA3AF;
             --accent-glow: rgba(45, 225, 194, 0.15);
@@ -36,7 +33,6 @@
             --visuals-border: rgba(255,255,255,0.08);
         }
 
-        /* --- RESET & LAYOUT --- */
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
@@ -44,8 +40,8 @@
             color: var(--text-main);
             font-family: var(--font);
             width: 100%;
-            height: 100vh; /* Занимаем всю высоту iframe */
-            overflow: hidden; /* Убираем скролл самого body */
+            height: 100vh;
+            overflow: hidden;
             transition: background-color 0.3s ease;
         }
 
@@ -53,21 +49,18 @@
             width: 100%;
             height: 100%;
             display: grid;
-            /* Пропорции: 40% настройки, 60% график */
             grid-template-columns: 0.8fr 1.2fr; 
-            gap: 40px; /* Отступ между колонками */
-            padding: 24px 32px; /* Внутренние отступы от краев блока */
-            align-content: center; /* Центрируем контент по вертикали, если места много */
+            gap: 40px;
+            padding: 24px 32px;
+            align-content: center;
         }
 
-        /* --- HEADER (Absolute positioning inside padding) --- */
         .widget-header {
             grid-column: 1 / -1;
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
             margin-bottom: 10px;
-            /* Линия под заголовком опциональна, здесь убрал для чистоты */
         }
 
         .title-block h2 {
@@ -82,7 +75,6 @@
             color: var(--text-muted);
         }
 
-        /* Toggle Button */
         .theme-toggle-btn {
             background: var(--visuals-bg);
             border: 1px solid var(--visuals-border);
@@ -98,7 +90,6 @@
         }
         .theme-toggle-btn:hover { border-color: var(--text-muted); }
 
-        /* --- CONTROLS SECTION --- */
         .controls {
             display: flex;
             flex-direction: column;
@@ -126,7 +117,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* Input Styling */
         .input-wrapper {
             display: flex;
             align-items: center;
@@ -165,7 +155,6 @@
         }
         input[type="number"]:focus { outline: none; }
         
-        /* Sliders */
         input[type=range] {
             -webkit-appearance: none;
             width: 100%;
@@ -187,7 +176,7 @@
             height: 20px;
             width: 20px;
             border-radius: 50%;
-            background: var(--bg-main); /* Match background */
+            background: var(--bg-main);
             cursor: pointer;
             margin-top: -7px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
@@ -200,12 +189,10 @@
             background: var(--accent);
         }
 
-        /* --- VISUALS SECTION --- */
         .visuals-container {
              width: 100%;
-             /* Адаптивная высота */
              height: 100%;
-             min-height: 250px; /* Чтобы не схлопнулся совсем */
+             min-height: 250px;
              max-height: 500px;
              
              display: flex;
@@ -256,7 +243,6 @@
             gap: 6px;
         }
 
-        /* CHART */
         .chart-wrapper {
             flex-grow: 1;
             width: 100%;
@@ -290,34 +276,31 @@
             opacity: 0.5;
         }
 
-        /* --- RESPONSIVENESS (Layout Shift) --- */
         
-        /* Когда ширина становится узкой (мобилка или узкая колонка Notion) */
         @media (max-width: 768px) {
             body { 
-                overflow-y: auto; /* Разрешаем скролл на мобилках */
+                overflow-y: auto;
                 height: auto; 
             }
 
             .widget-container {
-                grid-template-columns: 1fr; /* Одна колонка */
+                grid-template-columns: 1fr;
                 gap: 30px;
                 padding: 20px;
                 height: auto;
             }
 
             .visuals-container {
-                min-height: 280px; /* Фиксируем высоту графика на мобилке */
+                min-height: 280px;
             }
 
             .controls {
-                order: 2; /* На мобилке график сверху, управление снизу (опционально) */
+                order: 2;
             }
             .visuals-container { order: 1; }
             .widget-header { order: 0; }
         }
         
-        /* Сжимаем текст на очень узких экранах */
         @media (max-width: 380px) {
             .big-number { font-size: 32px; }
             .input-wrapper { padding: 4px 8px; }
@@ -329,8 +312,8 @@
     <div class="widget-container">
         <div class="widget-header">
             <div class="title-block">
-                <h2>The Compound Effect</h2>
-                <p>Visualize your wealth accumulation</p>
+                <h2>See your investments</h2>
+                <p>Visualize the plan and calculate the result</p>
             </div>
             <button class="theme-toggle-btn" id="themeToggle">
                 <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
@@ -343,7 +326,7 @@
                 <div class="label-row">
                     <span class="label-text">Starting Amount</span>
                     <div class="input-wrapper">
-                        <span class="currency">$</span>
+                        <span class="currency">€</span>
                         <input type="number" id="num-initial" value="1000" min="0" step="100">
                     </div>
                 </div>
@@ -354,7 +337,7 @@
                 <div class="label-row">
                     <span class="label-text">Monthly Deposit</span>
                     <div class="input-wrapper">
-                        <span class="currency">$</span>
+                        <span class="currency">€</span>
                         <input type="number" id="num-monthly" value="200" min="0" step="50">
                     </div>
                 </div>
@@ -388,11 +371,11 @@
             <div class="result-header">
                 <div class="result-block">
                     <div class="result-label">Projected Balance</div>
-                    <div class="big-number" id="result-total">$0</div>
+                    <div class="big-number" id="result-total">€0</div>
                 </div>
                 <div class="profit-badge">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-                    <span id="result-profit">$0 profit</span>
+                    <span id="result-profit">€0 profit</span>
                 </div>
             </div>
 
@@ -409,12 +392,11 @@
                 </svg>
             </div>
             
-            <div class="branding">Powered by Templation.io</div>
+            <div class="branding">Templation.io</div>
         </div>
     </div>
 
     <script>
-        // --- LOGIC ---
         const bindGroups = [
             { num: 'num-initial', range: 'range-initial' },
             { num: 'num-monthly', range: 'range-monthly' },
@@ -456,13 +438,13 @@
             const totalInterest = currentBalance - totalInvested;
 
             displayTotal.textContent = formatMoney(currentBalance);
-            displayProfit.textContent = `+${formatMoney(totalInterest)} free money`;
+            displayProfit.textContent = `+€{formatMoney(totalInterest)} free money`;
 
             drawGraph(points);
         }
 
         function formatMoney(amount) {
-            return '$' + Math.round(amount).toLocaleString('en-US');
+            return '€' + Math.round(amount).toLocaleString('en-US');
         }
 
         function drawGraph(data) {
@@ -479,8 +461,8 @@
                 return [x, y];
             });
 
-            let pathD = `M ${normalized[0][0]},${normalized[0][1]} `;
-            for (let i = 1; i < normalized.length; i++) pathD += `L ${normalized[i][0]},${normalized[i][1]} `;
+            let pathD = `M €{normalized[0][0]},€{normalized[0][1]} `;
+            for (let i = 1; i < normalized.length; i++) pathD += `L €{normalized[i][0]},€{normalized[i][1]} `;
 
             graphLine.setAttribute('d', pathD);
             graphArea.setAttribute('d', pathD + `L 100,100 L 0,100 Z`);
