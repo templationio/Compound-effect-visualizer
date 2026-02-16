@@ -194,7 +194,6 @@
              height: 100%;
              min-height: 250px;
              max-height: 500px;
-             
              display: flex;
              flex-direction: column;
              background: var(--visuals-bg);
@@ -276,10 +275,9 @@
             opacity: 0.5;
         }
 
-        
         @media (max-width: 768px) {
             body { 
-                overflow-y: auto;
+                overflow-y: auto; 
                 height: auto; 
             }
 
@@ -313,7 +311,7 @@
         <div class="widget-header">
             <div class="title-block">
                 <h2>See your investments</h2>
-                <p>Visualize the plan and calculate the result</p>
+                <p>Visualize the plan and calculate the result.</p>
             </div>
             <button class="theme-toggle-btn" id="themeToggle">
                 <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
@@ -392,7 +390,7 @@
                 </svg>
             </div>
             
-            <div class="branding">Templation.io</div>
+            <div class="branding">Powered by Templation.io</div>
         </div>
     </div>
 
@@ -438,7 +436,7 @@
             const totalInterest = currentBalance - totalInvested;
 
             displayTotal.textContent = formatMoney(currentBalance);
-            displayProfit.textContent = `+€{formatMoney(totalInterest)} free money`;
+            displayProfit.textContent = `+${formatMoney(totalInterest)} free money`;
 
             drawGraph(points);
         }
@@ -461,8 +459,8 @@
                 return [x, y];
             });
 
-            let pathD = `M €{normalized[0][0]},€{normalized[0][1]} `;
-            for (let i = 1; i < normalized.length; i++) pathD += `L €{normalized[i][0]},€{normalized[i][1]} `;
+            let pathD = `M ${normalized[0][0]},${normalized[0][1]} `;
+            for (let i = 1; i < normalized.length; i++) pathD += `L ${normalized[i][0]},${normalized[i][1]} `;
 
             graphLine.setAttribute('d', pathD);
             graphArea.setAttribute('d', pathD + `L 100,100 L 0,100 Z`);
