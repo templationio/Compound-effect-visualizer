@@ -1,400 +1,498 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Financial news widget</title>
+    <title>Compound Effect | Templation.io</title>
     <style>
         :root {
-            --bg-body: #ffffff;
-            --bg-card: #f9fafb;
+            --bg-main: #FFFFFF;
             --text-main: #111827;
-            --text-muted: #6b7280;
-            --border-color: #e5e7eb;
-            --accent-color: #10b981;
-            --accent-hover: #059669;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --text-muted: #6B7280;
+            --accent: #2DE1C2;
+            --accent-glow: rgba(45, 225, 194, 0.4);
+            --range-track: #E5E7EB;
+            --range-fill: #2DE1C2;
+            --input-bg: #F3F4F6;
+            --input-focus: #FFFFFF;
+            --visuals-bg: #F9FAFB;
+            --visuals-border: #E5E7EB;
+            --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif;
         }
 
         [data-theme="dark"] {
-            --bg-body: #191919;
-            --bg-card: #1f2937;
-            --text-main: #f9fafb;
-            --text-muted: #9ca3af;
-            --border-color: #374151;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+            --bg-main: #191919;
+            --text-main: #FFFFFF;
+            --text-muted: #9CA3AF;
+            --accent-glow: rgba(45, 225, 194, 0.15);
+            --range-track: #333333;
+            --range-fill: #2DE1C2;
+            --input-bg: #262626;
+            --input-focus: #000000;
+            --visuals-bg: rgba(255,255,255,0.02);
+            --visuals-border: rgba(255,255,255,0.08);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        
+
         body {
-            font-family: var(--font-family);
-            background-color: var(--bg-body);
+            background-color: var(--bg-main);
             color: var(--text-main);
-            transition: background-color 0.4s ease, color 0.4s ease;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
+            font-family: var(--font);
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            transition: background-color 0.3s ease;
         }
 
-        header {
+        .widget-container {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: 0.8fr 1.2fr; 
+            gap: 40px;
+            padding: 24px 32px;
+            align-content: center;
+        }
+
+        .widget-header {
+            grid-column: 1 / -1;
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 24px;
-            flex-wrap: wrap;
-            gap: 16px;
+            margin-bottom: 10px;
         }
 
-        .header-left h1 {
-            font-size: 24px;
+        .title-block h2 {
+            font-size: 22px;
             font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            margin-bottom: 4px;
+            letter-spacing: -0.5px;
         }
         
-        .header-left h1 span { color: var(--accent-color); }
-
-        .subtitle {
-            font-size: 14px;
+        .title-block p {
+            font-size: 13px;
             color: var(--text-muted);
-            margin-top: 4px;
-            max-width: 600px;
-            line-height: 1.4;
         }
 
-        .status-bar {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-top: 12px;
+        .theme-toggle-btn {
+            background: var(--visuals-bg);
+            border: 1px solid var(--visuals-border);
+            color: var(--text-main);
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
         }
-
-        .update-indicator { color: var(--accent-color); font-weight: 600; }
+        .theme-toggle-btn:hover { border-color: var(--text-muted); }
 
         .controls {
             display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 24px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .label-row {
+            display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 12px;
         }
 
-        button {
-            cursor: pointer;
-            border: none;
-            outline: none;
-            font-family: inherit;
-            transition: var(--transition);
+        .label-text {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .btn-refresh {
-            background-color: var(--accent-color);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 6px;
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            background: var(--input-bg);
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .input-wrapper:hover { border-color: var(--visuals-border); }
+        .input-wrapper:focus-within {
+            background: var(--input-focus);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px var(--accent-glow);
+        }
+
+        .currency {
+            color: var(--text-muted);
             font-weight: 600;
             font-size: 14px;
+            margin-right: 4px;
+        }
+
+        input[type="number"] {
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 15px;
+            width: 80px;
+            text-align: right;
+            padding: 0;
+            -moz-appearance: textfield;
+        }
+        input[type="number"]:focus { outline: none; }
+        
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+            margin: 0;
+        }
+        input[type=range]:focus { outline: none; }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            cursor: pointer;
+            background: var(--range-track);
+            border-radius: 4px;
+        }
+        
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: var(--bg-main);
+            cursor: pointer;
+            margin-top: -7px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            border: 2px solid var(--accent);
+            transition: transform 0.1s;
+        }
+
+        input[type=range]:active::-webkit-slider-thumb {
+            transform: scale(1.1);
+            background: var(--accent);
+        }
+
+        .visuals-container {
+             width: 100%;
+             height: 100%;
+             min-height: 250px;
+             max-height: 500px;
+             display: flex;
+             flex-direction: column;
+             background: var(--visuals-bg);
+             border-radius: 20px;
+             border: 1px solid var(--visuals-border);
+             padding: 24px;
+             position: relative;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 10px;
+            z-index: 2;
+        }
+
+        .result-block { display: flex; flex-direction: column; }
+
+        .result-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .big-number {
+            font-size: 40px;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            color: var(--text-main);
+            line-height: 1;
+        }
+
+        .profit-badge {
+            background: var(--accent-glow);
+            color: var(--accent);
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
             display: flex;
             align-items: center;
             gap: 6px;
         }
-        
-        .btn-refresh:hover { background-color: var(--accent-hover); }
-        
-        .btn-refresh svg { width: 16px; height: 16px; }
-        .spin { animation: spin 1s linear infinite; }
 
-        .theme-toggle {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            color: var(--text-muted);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .theme-toggle:hover {
-            color: var(--text-main);
-            border-color: var(--text-muted);
-        }
-
-        .news-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            width: 100%;
-        }
-
-        .news-card {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            transition: var(--transition);
-            cursor: pointer;
-            text-decoration: none;
-            color: inherit;
-            height: 100%;
-        }
-
-        .news-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow);
-            border-color: var(--accent-color);
-        }
-
-        .card-image {
-            height: 180px;
-            width: 100%;
-            background-color: var(--border-color);
-            object-fit: cover;
-        }
-
-        .card-content {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
+        .chart-wrapper {
             flex-grow: 1;
-        }
-
-        .card-meta {
-            display: flex;
-            justify-content: space-between;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 12px;
-            font-weight: 600;
-        }
-
-        .source-ft { color: #0d9488; }
-        .source-wsj { color: #059669; }
-        .source-bloom { color: #10b981; }
-
-        .card-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 10px;
-            line-height: 1.3;
-        }
-
-        .card-summary {
-            font-size: 14px;
-            color: var(--text-muted);
-            line-height: 1.5;
-            margin-bottom: 20px;
-            flex-grow: 1;
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
+            width: 100%;
+            position: relative;
             overflow: hidden;
         }
 
-        .read-more {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--accent-color);
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            margin-top: auto;
+        svg { width: 100%; height: 100%; overflow: visible; }
+
+        .chart-line {
+            fill: none;
+            stroke: var(--accent);
+            stroke-width: 3.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            filter: drop-shadow(0 4px 12px var(--accent-glow));
         }
 
-        footer {
-            margin-top: 40px;
-            text-align: center;
-            font-size: 12px;
+        .chart-area {
+            fill: url(#gradientArea);
+            opacity: 0.3;
+        }
+
+        .branding {
+            position: absolute;
+            bottom: 16px;
+            right: 24px;
+            font-size: 10px;
+            font-weight: 500;
             color: var(--text-muted);
-            padding-bottom: 20px;
+            opacity: 0.5;
         }
 
-        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @media (max-width: 768px) {
+            body { 
+                overflow-y: auto; 
+                height: auto; 
+            }
+
+            .widget-container {
+                grid-template-columns: 1fr;
+                gap: 30px;
+                padding: 20px;
+                height: auto;
+            }
+
+            .visuals-container {
+                min-height: 280px;
+            }
+
+            .controls {
+                order: 2;
+            }
+            .visuals-container { order: 1; }
+            .widget-header { order: 0; }
+        }
         
-        @media (max-width: 600px) {
-            .header-left h1 { font-size: 20px; }
-            .news-grid { grid-template-columns: 1fr; }
+        @media (max-width: 380px) {
+            .big-number { font-size: 32px; }
+            .input-wrapper { padding: 4px 8px; }
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="header-left">
-            <h1><span>&#8599;</span> Today's news</h1>
-            <p class="subtitle">From the world's leading financial publications</p>
-            <div class="status-bar">
-                <span id="last-updated">Last updated: --:--</span>
-                <span class="update-indicator">Auto-updates daily at 00:00</span>
+    <div class="widget-container">
+        <div class="widget-header">
+            <div class="title-block">
+                <h2>Visualize your plan</h2>
+                <p><i>% is applied to every month</i></p>
+            </div>
+            <button class="theme-toggle-btn" id="themeToggle">
+                <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </button>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <div class="label-row">
+                    <span class="label-text">Starting Amount</span>
+                    <div class="input-wrapper">
+                        <span class="currency">€</span>
+                        <input type="number" id="num-initial" value="1000" min="0" step="100">
+                    </div>
+                </div>
+                <input type="range" id="range-initial" min="0" max="20000" step="100" value="1000">
+            </div>
+
+            <div class="control-group">
+                <div class="label-row">
+                    <span class="label-text">Monthly Deposit</span>
+                    <div class="input-wrapper">
+                        <span class="currency">€</span>
+                        <input type="number" id="num-monthly" value="200" min="0" step="50">
+                    </div>
+                </div>
+                <input type="range" id="range-monthly" min="0" max="5000" step="50" value="200">
+            </div>
+
+            <div class="control-group">
+                <div class="label-row">
+                    <span class="label-text">Time Horizon</span>
+                    <div class="input-wrapper">
+                        <input type="number" id="num-years" value="10" min="1" max="50">
+                        <span class="currency" style="margin-left:4px; margin-right:0; font-size:12px">yrs</span>
+                    </div>
+                </div>
+                <input type="range" id="range-years" min="1" max="40" step="1" value="10">
+            </div>
+
+            <div class="control-group">
+                <div class="label-row">
+                    <span class="label-text">Annual Return</span>
+                    <div class="input-wrapper">
+                        <input type="number" id="num-rate" value="8" min="0" max="20" step="0.5">
+                        <span class="currency" style="margin-left:2px; margin-right:0">%</span>
+                    </div>
+                </div>
+                <input type="range" id="range-rate" min="1" max="15" step="0.5" value="8">
             </div>
         </div>
-        <div class="controls">
-            <button class="theme-toggle" id="themeBtn" aria-label="Toggle Theme">
-                <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-                <svg id="sun-icon" style="display:none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-            </button>
-            <button class="btn-refresh" id="refreshBtn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-                Refresh news
-            </button>
-        </div>
-    </header>
 
-    <div class="news-grid" id="newsContainer">
-        </div>
+        <div class="visuals-container">
+            <div class="result-header">
+                <div class="result-block">
+                    <div class="result-label">Projected Balance</div>
+                    <div class="big-number" id="result-total">€0</div>
+                </div>
+                <div class="profit-badge">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                    <span id="result-profit">€0 profit</span>
+                </div>
+            </div>
 
-    <footer>
-        Templation.io widget powered by Embeddable.co
-    </footer>
+            <div class="chart-wrapper">
+                <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <defs>
+                        <linearGradient id="gradientArea" x1="0" x2="0" y1="0" y2="1">
+                            <stop offset="0%" stop-color="var(--accent)" />
+                            <stop offset="100%" stop-color="transparent" />
+                        </linearGradient>
+                    </defs>
+                    <path id="graph-area" class="chart-area" d="" />
+                    <path id="graph-line" class="chart-line" d="" />
+                </svg>
+            </div>
+            
+            <div class="branding">Powered by Templation.io</div>
+        </div>
+    </div>
 
     <script>
-        const REFRESH_HOUR = 0; // 00:00 AM
-        
-        const MOCK_NEWS = [
-            {
-                source: "Financial Times",
-                colorClass: "source-ft",
-                time: "13h ago",
-                title: "Federal Reserve Signals Cautious Approach to Rate Adjustments",
-                summary: "Central bank officials discuss maintaining flexibility in monetary policy decisions as inflation shows signs of cooling but labor markets remain tight.",
-                image: "https://images.unsplash.com/photo-1611974765270-ca12586343bb?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-                url: "#"
-            },
-            {
-                source: "Wall Street Journal",
-                colorClass: "source-wsj",
-                time: "14h ago",
-                title: "Tech Sector Rally Continues as AI Investment Reaches Record Highs",
-                summary: "Major technology companies report unprecedented capital allocation toward artificial intelligence infrastructure, driving market optimism.",
-                image: "https://images.unsplash.com/photo-1642543492481-44e81e3914a7?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-                url: "#"
-            },
-            {
-                source: "Bloomberg",
-                colorClass: "source-bloom",
-                time: "14h ago",
-                title: "Global Markets React to Emerging Trade Agreements in Asia",
-                summary: "International equity markets show positive momentum following diplomatic progress on new trade tariffs and cross-border commerce regulations.",
-                image: "https://images.unsplash.com/photo-1611974765272-d5a2364c7d0d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-                url: "#"
-            }
+        const bindGroups = [
+            { num: 'num-initial', range: 'range-initial' },
+            { num: 'num-monthly', range: 'range-monthly' },
+            { num: 'num-years', range: 'range-years' },
+            { num: 'num-rate', range: 'range-rate' }
         ];
 
-        const state = {
-            theme: localStorage.getItem('widgetTheme') || 'dark', // Default to Dark as per ref
-            lastUpdate: localStorage.getItem('lastUpdate') || null
-        };
+        const refs = {};
+        bindGroups.forEach(g => {
+            refs[g.num] = document.getElementById(g.num);
+            refs[g.range] = document.getElementById(g.range);
+        });
 
-        const themeBtn = document.getElementById('themeBtn');
-        const refreshBtn = document.getElementById('refreshBtn');
-        const newsContainer = document.getElementById('newsContainer');
-        const moonIcon = document.getElementById('moon-icon');
-        const sunIcon = document.getElementById('sun-icon');
-        const lastUpdatedLabel = document.getElementById('last-updated');
+        const displayTotal = document.getElementById('result-total');
+        const displayProfit = document.getElementById('result-profit');
+        const graphLine = document.getElementById('graph-line');
+        const graphArea = document.getElementById('graph-area');
+        const themeToggle = document.getElementById('themeToggle');
+        const iconSun = document.querySelector('.icon-sun');
+        const iconMoon = document.querySelector('.icon-moon');
 
+        function calculate() {
+            const P = parseFloat(refs['num-initial'].value) || 0;
+            const PMT = parseFloat(refs['num-monthly'].value) || 0;
+            const r = (parseFloat(refs['num-rate'].value) || 0) / 100 / 12;
+            const t = parseFloat(refs['num-years'].value) || 0;
+            const n = t * 12;
 
-        function init() {
-            applyTheme(state.theme);
-            checkAutoUpdate();
-            renderNews(MOCK_NEWS); // Initial render
-            updateTimeLabel();
-        }
+            let points = [P];
+            let currentBalance = P;
+            let totalInvested = P;
 
-        function applyTheme(theme) {
-            document.documentElement.setAttribute('data-theme', theme);
-            if (theme === 'dark') {
-                moonIcon.style.display = 'none';
-                sunIcon.style.display = 'block';
-            } else {
-                moonIcon.style.display = 'block';
-                sunIcon.style.display = 'none';
+            for (let i = 1; i <= n; i++) {
+                currentBalance = (currentBalance * (1 + r)) + PMT;
+                if (i % 12 === 0 || i === n) points.push(currentBalance);
             }
-            localStorage.setItem('widgetTheme', theme);
-            state.theme = theme;
+            
+            totalInvested += (PMT * n);
+            const totalInterest = currentBalance - totalInvested;
+
+            displayTotal.textContent = formatMoney(currentBalance);
+            displayProfit.textContent = `+${formatMoney(totalInterest)} free money`;
+
+            drawGraph(points);
         }
+
+        function formatMoney(amount) {
+            return '€' + Math.round(amount).toLocaleString('en-US');
+        }
+
+        function drawGraph(data) {
+            if (data.length < 2) return;
+            const maxVal = Math.max(...data) * 1.05;
+            const minVal = data[0]; 
+            const effectiveMax = maxVal === minVal ? maxVal + 100 : maxVal;
+            const range = effectiveMax - (minVal > 0 ? minVal * 0.7 : 0);
+            const base = (minVal > 0 ? minVal * 0.7 : 0);
+
+            const normalized = data.map((val, index) => {
+                const x = (index / (data.length - 1)) * 100;
+                const y = 100 - (((val - base) / range) * 95);
+                return [x, y];
+            });
+
+            let pathD = `M ${normalized[0][0]},${normalized[0][1]} `;
+            for (let i = 1; i < normalized.length; i++) pathD += `L ${normalized[i][0]},${normalized[i][1]} `;
+
+            graphLine.setAttribute('d', pathD);
+            graphArea.setAttribute('d', pathD + `L 100,100 L 0,100 Z`);
+        }
+
+        function syncInputs(source, target) {
+            target.value = source.value;
+            calculate();
+        }
+
+        bindGroups.forEach(group => {
+            const numInput = refs[group.num];
+            const rangeInput = refs[group.range];
+            numInput.addEventListener('input', () => syncInputs(numInput, rangeInput));
+            rangeInput.addEventListener('input', () => syncInputs(rangeInput, numInput));
+        });
 
         function toggleTheme() {
-            const newTheme = state.theme === 'light' ? 'dark' : 'light';
-            applyTheme(newTheme);
+            const html = document.documentElement;
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+            iconSun.style.display = isDark ? 'none' : 'block';
+            iconMoon.style.display = isDark ? 'block' : 'none';
         }
 
-        function updateTimeLabel() {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const dateString = now.toLocaleDateString([], { month: 'short', day: 'numeric' });
-            lastUpdatedLabel.textContent = `Last updated: ${dateString}, ${timeString}`;
-            localStorage.setItem('lastUpdate', now.toISOString());
+        themeToggle.addEventListener('click', toggleTheme);
+        calculate();
+        
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+            toggleTheme();
         }
-
-        function checkAutoUpdate() {
-            const now = new Date();
-            const last = state.lastUpdate ? new Date(state.lastUpdate) : new Date(0);
-            
-            if (now.getDate() !== last.getDate() && now.getHours() >= REFRESH_HOUR) {
-                console.log("Auto-updating news...");
-                loadNews();
-            }
-        }
-
-        async function loadNews() {
-            // Animation start
-            const svg = refreshBtn.querySelector('svg');
-            svg.classList.add('spin');
-            refreshBtn.disabled = true;
-
-
-            await new Promise(r => setTimeout(r, 1500));
-
-            const shuffled = [...MOCK_NEWS].sort(() => 0.5 - Math.random());
-            renderNews(shuffled);
-            updateTimeLabel();
-
-            svg.classList.remove('spin');
-            refreshBtn.disabled = false;
-        }
-
-        function renderNews(newsData) {
-            newsContainer.innerHTML = '';
-            
-            newsData.forEach(item => {
-                const card = document.createElement('a');
-                card.className = 'news-card';
-                card.href = item.url;
-                card.target = '_blank'; // Open in new tab
-                
-                card.innerHTML = `
-                    <img src="${item.image}" alt="News Image" class="card-image">
-                    <div class="card-content">
-                        <div class="card-meta">
-                            <span class="${item.colorClass}">${item.source}</span>
-                            <span>${item.time}</span>
-                        </div>
-                        <h3 class="card-title">${item.title}</h3>
-                        <p class="card-summary">${item.summary}</p>
-                        <div class="read-more">
-                            Read full article 
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-                        </div>
-                    </div>
-                `;
-                newsContainer.appendChild(card);
-            });
-        }
-
-        themeBtn.addEventListener('click', toggleTheme);
-        refreshBtn.addEventListener('click', loadNews);
-
-        init();
-
     </script>
 </body>
 </html>
